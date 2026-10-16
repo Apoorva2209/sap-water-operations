@@ -14,6 +14,23 @@ SAP (Shared Agri Water Platform) is an offline-first water-operations system bui
 
 The repository contains the decision engine, a strategy simulator, an edge controller with a local PIN-protected web dashboard that works on farm Wi-Fi, ESP32 firmware, tests and CI. On a synthetic 30-day season with injected faults, SAP used less water than a fixed timer (about 32% less) with fewer crop-stress days, and caught both injected faults that the timer and threshold strategies missed. **These are simulation results that test the logic, not field evidence**; the firmware has not yet run on real hardware. Next steps are bench calibration, a two-zone prototype and a paired control-plot field trial.
 
+## From problem to solution
+
+| # | The problem on a shared-source farm | How SAP solves it | Where |
+|---|---|---|---|
+| 1 | Not enough water for every plot at once; the loudest or nearest farmer wins | Splits the limited water by crop risk and agreed priority, within tank reserve, pump, run-time and energy limits | `allocator.py` |
+| 2 | Nobody knows how much a plot really needs; timers and single thresholds ignore weather and crop stage | FAO-56 style root-zone water balance from 2-depth soil moisture, evapotranspiration and forecast | `estimator.py` |
+| 3 | Bad sensors and stale forecasts cause wrong decisions that look confident | Every recommendation carries a confidence score and written reasons; low confidence means ask, run small, hold or inspect | `estimator.py`, `allocator.py` |
+| 4 | Farm internet is weak or absent | Everything runs on a local controller and dashboard over farm Wi-Fi; approvals work offline | `controller.py`, `server.py` |
+| 5 | Pumps burn out dry, pipes burst, valves stick | Local interlocks stop the run: e-stop, low tank, dry-run, overcurrent, low/high flow, pressure collapse; the ESP32 enforces them itself, including if the controller goes silent | `safety.py`, `sap_node.ino` |
+| 6 | Water is sent but nobody checks it reached the roots; leaks go unnoticed | After each run SAP compares planned vs delivered water and expected vs measured soil response, then flags leak, blockage, stuck valve, dry-run, sensor fault or ineffective irrigation, and locks the zone for inspection | `verify.py` |
+| 7 | Disputes between members: who got what, who approved it | Hash-chained log of recommendations, approvals, commands and results; editing any entry is detectable | `eventlog.py` |
+| 8 | Hard to know if it is better than what farmers do now | Simulator compares fixed timer, threshold and SAP on the same synthetic season with injected faults | `simulator.py` |
+
+**The flow in one line:** read sensors, estimate need and confidence, allocate shared water, run (or ask) according to confidence, stop on any unsafe condition, verify the result, log it.
+
+**What is proven and what is not:** the logic is tested (unit tests and simulation). Real-world savings, sensor accuracy and the firmware on hardware are **not yet proven**; that needs bench calibration and a paired control-plot field trial.
+
 ## What is in this repository
 
 | Module | What it does |
