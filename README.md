@@ -15,11 +15,15 @@ Student venture · Sri Sairam Engineering College, Chennai · Wadhwani Foundatio
 | `sap/verify.py` | After each run: did the planned water flow, and did soil respond as predicted? Flags likely leak, blockage, stuck valve, dry-run, sensor fault or ineffective irrigation |
 | `sap/eventlog.py` | Append-only, SHA-256 hash-chained log of recommendations, approvals, commands and results; tampering is detectable |
 | `sap/simulator.py` | Compares fixed timer, single moisture threshold and SAP on the same synthetic season with injected faults |
+| `sap/controller.py` | Edge controller: daily plan, approvals, safe execution, verification, fault lockout (simulated hardware for demos) |
+| `sap/server.py` + `dashboard/index.html` | Local web dashboard and JSON API (stdlib only) — works on farm Wi-Fi with no internet; PIN-protected actions |
+| `firmware/sap_node/sap_node.ino` | ESP32 node: pump/valve relays, flow, pressure, pump current, tank level, 2-depth soil, e-stop; enforces safety limits itself, incl. controller-heartbeat loss |
 | `tests/test_sap.py` | Unit tests for estimation, allocation, safety, verification, the log and the simulator |
 
 ## Quick start
 
 ```bash
+python3 -m sap.server             # dashboard at http://localhost:8080 (PIN 1234, set SAP_PIN)
 python3 -m sap.simulator          # run the strategy comparison
 python3 -m pytest -q              # run the tests (pip install pytest)
 ```

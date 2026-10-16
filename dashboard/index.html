@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAP Operator Dashboard</title>
+<style>
+:root{--bg:#F5F6F2;--card:#FFFFFF;--ink:#14213D;--mut:#5B6475;--line:#DDE1E6;--blue:#1F6FB2;--green:#2E8B57;--amber:#C8741A;--red:#B83227;--grey:#7A8290}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--ink);color:#fff}
+header h1{margin:0;font-size:20px}header small{color:#B9C3D6}
+.pill{padding:4px 10px;border-radius:99px;font-size:13px;font-weight:600}
+main{max-width:1200px;margin:0 auto;padding:16px;display:grid;gap:16px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.bar .stat{min-width:140px}.stat b{display:block;font-size:22px}.stat span{color:var(--mut);font-size:13px}
+.zones{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;border-left:6px solid var(--grey)}
+.card h2{margin:0 0 2px;font-size:18px}.sub{color:var(--mut);font-size:13px;margin-bottom:10px}
+.meter{height:10px;background:#E8EBEF;border-radius:6px;position:relative;margin:6px 0 2px}
+.meter i{position:absolute;inset:0 auto 0 0;border-radius:6px}
+.row{display:flex;justify-content:space-between;font-size:14px;margin:6px 0}
+.mode{display:inline-block;margin:8px 0;padding:5px 10px;border-radius:8px;font-weight:700;font-size:13px}
+ul.r{margin:6px 0 0 18px;padding:0;font-size:13px;color:var(--mut)}
+.ver{margin-top:10px;padding:8px 10px;border-radius:8px;background:#F1F3F6;font-size:13px}
+button{font:inherit;font-size:14px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 12px;cursor:pointer}
+button.p{background:var(--blue);color:#fff;border-color:var(--blue)}button.d{background:var(--red);color:#fff;border-color:var(--red)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+section.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+section.panel h3{margin:0 0 10px;font-size:16px}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:800px){.two{grid-template-columns:1fr}}
+select,input{font:inherit;font-size:14px;padding:6px;border:1px solid var(--line);border-radius:8px}
+#toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;display:none}
+.note{font-size:12px;color:var(--mut)}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>SAP · Water operations</h1><small>Shared source · offline-first edge controller</small></div>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <span id="net" class="pill"></span><span id="chain" class="pill"></span>
+    <button class="d" id="estop">EMERGENCY STOP</button>
+  </div>
+</header>
+<main>
+  <div class="bar">
+    <div class="stat"><b id="tank">–</b><span>litres in shared tank</span></div>
+    <div class="stat"><b id="rain">–</b><span>rain forecast (mm)</span></div>
+    <div class="stat"><b id="running">–</b><span>zone running now</span></div>
+    <div style="flex:1"></div>
+    <label class="note">Operator PIN <input id="pin" type="password" value="1234" size="5"></label>
+    <button onclick="act('replan')">Re-plan</button>
+    <button class="p" onclick="act('auto')">Run auto-approved</button>
+  </div>
+  <div class="zones" id="zones"></div>
+  <div class="two">
+    <section class="panel">
+      <h3>Test conditions (bench / demo)</h3>
+      <div class="actions">
+        <select id="fk"><option value="leak">Leak</option><option value="blockage">Blockage</option><option value="sensor">Sensor failure</option></select>
+        <select id="fz"><option>A</option><option>B</option><option>C</option></select>
+        <button onclick="act('inject',{kind:$('fk').value,zone:$('fz').value})">Inject fault</button>
+      </div>
+      <div class="actions">
+        <button onclick="act('network',{online:!S.online})">Toggle internet</button>
+        <button onclick="act('weather',{rain_mm:20})">Forecast 20 mm rain</button>
+        <button onclick="act('weather',{rain_mm:0})">Clear forecast</button>
+      </div>
+      <p class="note">Faults and weather here act on simulated hardware. On the bench, the same API drives the real ESP32 node.</p>
+    </section>
+    <section class="panel">
+      <h3>Strategy comparison <span class="note">(simulated season, not field results)</span></h3>
+      <button onclick="sim()">Run simulation</button>
+      <div id="simout" style="margin-top:10px"></div>
+    </section>
+  </div>
+  <section class="panel">
+    <h3>Event log <span class="note">(hash-chained, newest first)</span></h3>
+    <table><thead><tr><th>Time</th><th>Event</th><th>By</th><th>Detail</th></tr></thead><tbody id="log"></tbody></table>
+  </section>
+</main>
+<div id="toast"></div>
+<script>
+const $=id=>document.getElementById(id);let S={};
+const MODE={auto:['AUTO · high confidence','var(--green)'],needs_approval:['NEEDS APPROVAL','var(--amber)'],conservative:['CONSERVATIVE RUN','var(--amber)'],inspect:['INSPECT · fault','var(--red)'],hold:['HOLD','var(--grey)']};
+function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',2600)}
+async function act(a,extra={}){const r=await fetch('/api/'+a,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:$('pin').value,...extra})});const j=await r.json();toast(j.message||j.error);load()}
+function esc(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+function zoneCard(z){
+  const [label,col]=MODE[z.mode]||['?','var(--grey)'];
+  const pct=Math.max(0,Math.min(100,(z.vwc-z.wp)/(z.fc-z.wp)*100));
+  const conf=Math.round(z.confidence*100);
+  const last=z.last?`<div class="ver"><b>Last run:</b> ${esc(z.last.verification.detail)}${z.last.trip?`<br><b>Safety stop:</b> ${esc(z.last.trip)}`:''}</div>`:'';
+  const busy=!!S.running||S.estop;
+  return `<div class="card" style="border-left-color:${col}">
+   <h2>Zone ${z.id} · ${esc(z.crop)}</h2><div class="sub">${esc(z.member)} · ${esc(z.soil)} · ${z.area_m2} m²</div>
+   <div class="row"><span>Root-zone water</span><b>${pct.toFixed(0)}% of available</b></div><div class="meter"><i style="width:${pct}%;background:var(--blue)"></i></div>
+   <div class="row"><span>Confidence</span><b>${conf}%</b></div><div class="meter"><i style="width:${conf}%;background:${col}"></i></div>
+   <div class="row"><span>Crop risk if delayed</span><b>${Math.round(z.risk*100)}%</b></div>
+   <span class="mode" style="background:color-mix(in srgb,${col} 15%,#fff);color:${col}">${label}</span>
+   <div class="row"><span>Plan</span><b>${z.volume_l?`${z.volume_l} L · ${z.duration_min} min · ${z.energy_kwh} kWh`:'no run'}</b></div>
+   <ul class="r">${z.reasons.map(r=>`<li>${esc(r)}</li>`).join('')}${z.constraints.map(r=>`<li><b>limit:</b> ${esc(r)}</li>`).join('')}</ul>
+   ${last}
+   <div class="actions">
+     ${['needs_approval','conservative','auto'].includes(z.mode)?`<button class="p" ${busy?'disabled':''} onclick="act('approve',{zone:'${z.id}'})">Approve run</button><button onclick="act('reject',{zone:'${z.id}'})">Hold</button>`:''}
+     ${z.fault_open?`<button onclick="act('clear',{zone:'${z.id}'})">Mark repaired</button>`:''}
+   </div></div>`}
+async function load(){
+  S=await (await fetch('/api/state')).json();
+  $('tank').textContent=S.tank_l.toLocaleString('en-IN');$('rain').textContent=S.weather.rain_forecast_mm;
+  $('running').textContent=S.running||'none';
+  $('net').textContent=S.online?'ONLINE':'OFFLINE · running locally';$('net').style.background=S.online?'#2E8B57':'#C8741A';
+  $('chain').textContent=S.log_ok?'Log verified':'LOG TAMPERED';$('chain').style.background=S.log_ok?'#1F6FB2':'#B83227';
+  $('estop').textContent=S.estop?'RESET STOP':'EMERGENCY STOP';$('estop').onclick=()=>act('estop',{on:!S.estop});
+  $('zones').innerHTML=S.zones.map(zoneCard).join('');
+  $('log').innerHTML=S.events.map(e=>`<tr><td>${new Date(e.ts*1000).toLocaleTimeString()}</td><td>${esc(e.kind)}</td><td>${esc(e.actor)}</td><td>${esc(JSON.stringify(e.payload).slice(0,160))}</td></tr>`).join('');
+}
+async function sim(){
+  $('simout').textContent='Running…';const rs=await (await fetch('/api/simulate')).json();
+  $('simout').innerHTML=`<table><tr><th>Strategy</th><th>Water (L)</th><th>Stressed zone-days</th><th>Over-watered</th><th>Leaked (L)</th><th>Faults found</th></tr>${rs.map(r=>`<tr><td>${r.strategy}</td><td>${Math.round(r.water_l).toLocaleString('en-IN')}</td><td>${r.stress_days}</td><td>${r.waste_days}</td><td>${Math.round(r.leaked_l)}</td><td>${r.faults_detected}/${r.faults_true}</td></tr>`).join('')}</table>`}
+load();setInterval(load,2000);
+</script>
+</body>
+</html>
