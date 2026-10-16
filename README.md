@@ -20,6 +20,10 @@ Student venture · Sri Sairam Engineering College, Chennai · Wadhwani Foundatio
 | `firmware/sap_node/sap_node.ino` | ESP32 node: pump/valve relays, flow, pressure, pump current, tank level, 2-depth soil, e-stop; enforces safety limits itself, incl. controller-heartbeat loss |
 | `tests/test_sap.py` | Unit tests for estimation, allocation, safety, verification, the log and the simulator |
 
+![SAP dashboard: zone cards, a leak detected and locked on zone C, verified event log](docs/dashboard.png)
+
+*Dashboard with simulated hardware: a leak was injected on zone C, detected after the run and the zone locked for inspection.*
+
 ## Quick start
 
 ```bash
@@ -43,6 +47,7 @@ Python 3.10+, no third-party runtime dependencies.
 ## Honest status
 
 * **Simulation only.** The simulator uses a simple daily soil bucket and synthetic weather. Its numbers test the logic; they are **not** evidence of water savings or accuracy.
+* **The firmware has not been run on real hardware.** The dashboard uses simulated hardware (`FakeHardware`). Calibrate sensors on the bench first and have an electrician wire any mains pump.
 * No field data yet. ML is deliberately not used until there is data, an evaluation plan and a fallback.
 * Thresholds (confidence cut-offs, fault ratios) are starting assumptions to be calibrated on the bench prototype and in a control-plot field trial.
 * A patent/novelty search has not been done; no novelty is claimed.
@@ -50,5 +55,5 @@ Python 3.10+, no third-party runtime dependencies.
 ## Next steps
 
 * Bench prototype: 2 zones, shared tank, pump, valves, flow + pressure + pump-current sensing, ESP32/Raspberry Pi controller.
-* Operator dashboard and SMS/WhatsApp approvals.
+* SMS/WhatsApp approvals (the local web dashboard already exists).
 * Field trial with paired SAP and control plots and an agronomist rating crop condition.

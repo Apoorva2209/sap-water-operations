@@ -102,3 +102,13 @@ def test_simulation_sap_finds_injected_faults():
     res = {r.strategy: r for r in compare()}
     assert res["sap"].faults_detected == res["sap"].faults_true == 2
     assert res["sap"].leaked_l < res["timer"].leaked_l
+
+
+def test_controller_rejects_second_run_while_one_is_active():
+    from sap.controller import Controller
+
+    with tempfile.TemporaryDirectory() as d:
+        c = Controller(log_path=f"{d}/events.jsonl")
+        c.running = "A"
+        ok, msg = c.approve("B")
+        assert not ok and "already running" in msg

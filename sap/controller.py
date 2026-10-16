@@ -89,6 +89,8 @@ class Controller:
             r = self.recs.get(zid)
             if not r or r.mode not in (Mode.NEEDS_APPROVAL, Mode.CONSERVATIVE, Mode.AUTO):
                 return False, "nothing to approve"
+            if self.running:
+                return False, f"zone {self.running} is already running"
             self.log.append("approval", {"zone": zid, "volume_l": r.volume_l}, actor=actor)
         threading.Thread(target=self._run, args=(zid,), daemon=True).start()
         return True, "started"
