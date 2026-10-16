@@ -4,6 +4,8 @@
 
 SAP helps a group of small farms (for example an FPO cluster on one borewell or tank) decide **where limited water should go, deliver it safely even without internet, and verify that it reached the root zone**.
 
+**Built by Apoorva SV** (SAP Team).
+
 Student venture · Sri Sairam Engineering College, Chennai · Wadhwani Foundation Ignite.
 
 ## Abstract
@@ -98,3 +100,7 @@ Equivalent without installing: `python -m sap.server`, `python -m sap.simulator`
 * Bench prototype: 2 zones, shared tank, pump, valves, flow + pressure + pump-current sensing, ESP32/Raspberry Pi controller.
 * SMS/WhatsApp approvals (the local web dashboard already exists).
 * Field trial with paired SAP and control plots and an agronomist rating crop condition.
+
+## Credits
+
+Done by **Apoorva SV**, SAP Team, Sri Sairam Engineering College, Chennai.
