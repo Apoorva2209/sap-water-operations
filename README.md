@@ -45,6 +45,7 @@ The repository contains the decision engine, a strategy simulator, an edge contr
 | `sap/controller.py` | Edge controller: daily plan, approvals, safe execution, verification, fault lockout (simulated hardware for demos) |
 | `sap/server.py` + `sap/dashboard/index.html` | Local web dashboard and JSON API (stdlib only) — works on farm Wi-Fi with no internet; PIN-protected actions |
 | `firmware/sap_node/sap_node.ino` | ESP32 node: pump/valve relays, flow, pressure, pump current, tank level, 2-depth soil, e-stop; enforces safety limits itself, incl. controller-heartbeat loss |
+| `android/` | Android app (API 26+): connects to the controller on farm Wi-Fi and shows the dashboard; builds an APK in CI |
 | `tests/test_sap.py` | Unit tests for estimation, allocation, safety, verification, the log and the simulator |
 
 ![SAP dashboard: zone cards, a leak detected and locked on zone C, verified event log](docs/dashboard.png)
@@ -69,6 +70,7 @@ Equivalent without installing: `python -m sap.server`, `python -m sap.simulator`
 
 ## Documentation
 
+* [android/README.md](android/README.md) - Android app: build and use
 * [docs/API.md](docs/API.md) - dashboard JSON API and configuration
 * [docs/HARDWARE.md](docs/HARDWARE.md) - ESP32 pin map, safety behaviour and bench checklist
 * [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), [CHANGELOG.md](CHANGELOG.md)
