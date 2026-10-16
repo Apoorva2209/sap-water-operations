@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sap-water-operations"
+version = "0.1.0"
+description = "Offline-first water allocation, safe delivery and verification for farms sharing one water source"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "SAP Team, Sri Sairam Engineering College" }]
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[project.scripts]
+sap-server = "sap.server:main"
+sap-simulate = "sap.simulator:main"
+
+[tool.setuptools]
+packages = ["sap"]
+
+[tool.setuptools.package-data]
+sap = ["dashboard/*.html"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

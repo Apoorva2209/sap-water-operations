@@ -1,5 +1,7 @@
 # SAP — offline-first water operations for farms sharing one source
 
+[![tests](https://github.com/Apoorva2209/sap-water-operations/actions/workflows/tests.yml/badge.svg)](https://github.com/Apoorva2209/sap-water-operations/actions/workflows/tests.yml) [![license: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE) ![status: simulation + bench prototype](https://img.shields.io/badge/status-simulation%20%2B%20bench%20prototype-orange)
+
 SAP helps a group of small farms (for example an FPO cluster on one borewell or tank) decide **where limited water should go, deliver it safely even without internet, and verify that it reached the root zone**.
 
 Student venture · Sri Sairam Engineering College, Chennai · Wadhwani Foundation Ignite.
@@ -16,7 +18,7 @@ Student venture · Sri Sairam Engineering College, Chennai · Wadhwani Foundatio
 | `sap/eventlog.py` | Append-only, SHA-256 hash-chained log of recommendations, approvals, commands and results; tampering is detectable |
 | `sap/simulator.py` | Compares fixed timer, single moisture threshold and SAP on the same synthetic season with injected faults |
 | `sap/controller.py` | Edge controller: daily plan, approvals, safe execution, verification, fault lockout (simulated hardware for demos) |
-| `sap/server.py` + `dashboard/index.html` | Local web dashboard and JSON API (stdlib only) — works on farm Wi-Fi with no internet; PIN-protected actions |
+| `sap/server.py` + `sap/dashboard/index.html` | Local web dashboard and JSON API (stdlib only) — works on farm Wi-Fi with no internet; PIN-protected actions |
 | `firmware/sap_node/sap_node.ino` | ESP32 node: pump/valve relays, flow, pressure, pump current, tank level, 2-depth soil, e-stop; enforces safety limits itself, incl. controller-heartbeat loss |
 | `tests/test_sap.py` | Unit tests for estimation, allocation, safety, verification, the log and the simulator |
 
@@ -27,12 +29,24 @@ Student venture · Sri Sairam Engineering College, Chennai · Wadhwani Foundatio
 ## Quick start
 
 ```bash
-python3 -m sap.server             # dashboard at http://localhost:8080 (PIN 1234, set SAP_PIN)
-python3 -m sap.simulator          # run the strategy comparison
-python3 -m pytest -q              # run the tests (pip install pytest)
+git clone https://github.com/Apoorva2209/sap-water-operations.git
+cd sap-water-operations
+pip install -e ".[test]"          # no runtime dependencies; pytest only for tests
+
+sap-server                        # dashboard at http://localhost:8080 (demo PIN 1234)
+sap-simulate                      # strategy comparison (simulated season)
+python -m pytest -q               # run the tests
 ```
 
-Python 3.10+, no third-party runtime dependencies.
+Equivalent without installing: `python -m sap.server`, `python -m sap.simulator`. Python 3.10+.
+
+**Before using on a network:** set `SAP_PIN` to your own PIN. The server listens on localhost only; set `SAP_HOST=0.0.0.0` to serve the farm Wi-Fi (see [SECURITY.md](SECURITY.md)).
+
+## Documentation
+
+* [docs/API.md](docs/API.md) - dashboard JSON API and configuration
+* [docs/HARDWARE.md](docs/HARDWARE.md) - ESP32 pin map, safety behaviour and bench checklist
+* [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), [CHANGELOG.md](CHANGELOG.md)
 
 ## Decision flow
 

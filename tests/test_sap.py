@@ -112,3 +112,13 @@ def test_controller_rejects_second_run_while_one_is_active():
         c.running = "A"
         ok, msg = c.approve("B")
         assert not ok and "already running" in msg
+
+
+def test_inject_rejects_unknown_fault_kind_and_zone():
+    from sap.controller import Controller
+
+    with tempfile.TemporaryDirectory() as d:
+        c = Controller(log_path=f"{d}/events.jsonl")
+        assert c.inject("leak", "C") is True
+        assert c.inject("gremlins", "C") is False
+        assert c.inject("leak", "Z") is False

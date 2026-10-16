@@ -116,8 +116,11 @@ class Controller:
         self.plan()
 
     def inject(self, kind, zid):
+        if kind not in self.hw.faults or zid not in self.hw.zones:
+            return False
         self.hw.faults[kind] = zid
         self.log.append("fault_injected", {"kind": kind, "zone": zid}, actor="test")
+        return True
 
     def run_auto(self):
         for zid, r in list(self.recs.items()):

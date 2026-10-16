@@ -171,7 +171,7 @@ def compare(**kw) -> list[Result]:
     return [run(s, **kw) for s in ("timer", "threshold", "sap")]
 
 
-if __name__ == "__main__":
+def main():
     print("SIMULATED, synthetic 30-day season, 3 zones on one shared tank\n")
     print(f"{'strategy':10} {'water L':>9} {'energy kWh':>11} {'stress zd':>10} {'waste zd':>9} {'leaked L':>9} {'faults found':>13} {'approvals':>10}")
     for r in compare():
@@ -179,3 +179,7 @@ if __name__ == "__main__":
               f"{r.leaked_l:9.0f} {f'{r.faults_detected}/{r.faults_true}':>13} {r.approvals_requested:10d}")
         for line in r.log:
             print("   -", line)
+
+
+if __name__ == "__main__":
+    main()
