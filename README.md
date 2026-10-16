@@ -6,6 +6,14 @@ SAP helps a group of small farms (for example an FPO cluster on one borewell or 
 
 Student venture · Sri Sairam Engineering College, Chennai · Wadhwani Foundation Ignite.
 
+## Abstract
+
+Small farms that share a single borewell, tank or canal outlet face a double problem: there is never enough water for every plot at the moment it is needed, and nobody can tell whether the water that was sent actually reached the roots. Fixed timers waste water on wet soil and starve dry plots; single-threshold controllers ignore weather, crop stage and the neighbour's needs; and both silently keep running through leaks, blockages and failed sensors. Most farm connectivity is also too weak for cloud-dependent systems.
+
+SAP (Shared Agri Water Platform) is an offline-first water-operations system built around three ideas. First, **fair, explainable allocation**: an interpretable FAO-56 style root-zone water balance estimates each zone's need from two-depth soil moisture, evapotranspiration and forecast, attaches a confidence score with stated reasons, and then divides the limited source across zones by crop risk and agreed priority, within reserve, pump, run-time and energy limits. Confidence decides the mode: run automatically, ask the operator, run conservatively, hold, or inspect. Second, **safe delivery without internet**: every run executes on a local controller and an ESP32 node with independent interlocks (emergency stop, source reserve, dry-run, overcurrent, low/high flow, pressure collapse, lost-controller heartbeat). Third, **verification and accountability**: after each run SAP checks that the planned water flowed and that the soil responded, classifies likely leaks, blockages, stuck valves and sensor faults, locks the affected zone for inspection, and records recommendations, approvals, commands and results in a SHA-256 hash-chained log in which tampering is detectable.
+
+The repository contains the decision engine, a strategy simulator, an edge controller with a local PIN-protected web dashboard that works on farm Wi-Fi, ESP32 firmware, tests and CI. On a synthetic 30-day season with injected faults, SAP used less water than a fixed timer (about 32% less) with fewer crop-stress days, and caught both injected faults that the timer and threshold strategies missed. **These are simulation results that test the logic, not field evidence**; the firmware has not yet run on real hardware. Next steps are bench calibration, a two-zone prototype and a paired control-plot field trial.
+
 ## What is in this repository
 
 | Module | What it does |
